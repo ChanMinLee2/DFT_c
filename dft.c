@@ -27,7 +27,7 @@ int read_file(char* filename, char* buf, int size) {
     int read_len = 0;
 
     // 24바이트 헤더 건너뛰기
-    printf("%d\n",1);  // 파일의 시작(SEEK_SET)에서 24바이트 이동
+    // printf("%d\n",1);  // 파일의 시작(SEEK_SET)에서 24바이트 이동
     // fseek(fp, 24, SEEK_SET);
 
     if ((fp = fopen(filename, "rb")) == NULL) {
@@ -47,12 +47,12 @@ void calculate_DFT(char* xn, int window_size, float* Xr, float* Xi) {
     float pi = 3.14;
     int k, n;
 
-    for (k = 0; k < NBITS; k++) {
+    for (k = 0; k < window_size; k++) {
         Xr[k] = 0;
         Xi[k] = 0;
         for (n = 0; n < NBITS; n++) {
-            Xr[k] = xn[n] * cos(2 * pi * k * n / NBITS);
-            Xi[k] = xn[n] * sin(2 * pi * k * n / NBITS * (-1));
+            Xr[k] += xn[n] * cos(2 * pi * k * n / NBITS);
+            Xi[k] += xn[n] * sin(2 * pi * k * n / NBITS * (-1));
             if (k == 0 && n == 1) 
                 printf("xn[%d] = %d, Xr[%d] = %f k = %d, n = %d\n", n, xn[n], n, Xr[n], k, n);
         }
@@ -74,12 +74,14 @@ int main() {
     calculate_DFT(xn, MAX_WINDOW_SIZE, Xr, Xi);
 
     float max_Xr = Xr[0];
+    int max_Xr_index = 0;
     for (int i = 0; i < MAX_WINDOW_SIZE; i++) {
         printf("Xr[%d] = %f\n", i, Xr[i]);
-        if (max_Xr < Xr[i]) {
+        if (abs(max_Xr) < abs(Xr[i])) {
             max_Xr = Xr[i];
+            max_Xr_index = i;
         }
     }
-    printf("max_Xr = %f\n", max_Xr);
+    printf("max_Xr = %f, max_Xr_index = %d\n", max_Xr, max_Xr_index);
     return 0;
 }
